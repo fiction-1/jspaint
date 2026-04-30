@@ -19,3 +19,5 @@ Thumbs.db
 
 # temporary files when using git subrepo
 .git-rewrite/
+images/fromflyng/.DS_Store
+images/.DS_Store

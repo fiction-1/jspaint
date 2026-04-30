@@ -9,7 +9,7 @@ import { Handles } from "./Handles.js";
 // import { get_direction, localize } from "./app-localization.js";
 import { default_palette, get_winter_palette } from "./color-data.js";
 import { image_formats } from "./file-format-data.js";
-import { $this_version_news, cancel, change_some_url_params, change_url_param, clear, confirm_overwrite_capability, delete_selection, deselect, edit_copy, edit_cut, edit_paste, file_new, file_open, file_save, file_save_as, get_tool_by_id, get_uris, image_attributes, image_flip_and_rotate, image_invert_colors, image_stretch_and_skew, load_image_from_uri, make_or_update_undoable, open_from_file, paste, paste_image_from_file, redo, render_history_as_gif, reset_canvas_and_history, reset_file, reset_selected_colors, resize_canvas_and_save_dimensions, resize_canvas_without_saving_dimensions, save_as_prompt, select_all, select_tool, select_tools, set_magnification, show_document_history, show_error_message, show_news, show_resource_load_error_message, toggle_grid, undo, update_canvas_rect, update_disable_aa, update_helper_layer, update_magnified_canvas_size, view_bitmap, write_image_file } from "./functions.js";
+import { $this_version_news, cancel, change_some_url_params, change_url_param, clear, confirm_overwrite_capability, delete_selection, deselect, edit_copy, edit_cut, edit_paste, file_new, file_open, file_save, file_save_as, get_tool_by_id, get_uris, has_any_transparency, image_attributes, image_flip_and_rotate, image_invert_colors, image_stretch_and_skew, load_image_from_uri, make_or_update_undoable, open_from_file, paste, paste_image_from_file, redo, render_history_as_gif, reset_canvas_and_history, reset_file, reset_selected_colors, resize_canvas_and_save_dimensions, resize_canvas_without_saving_dimensions, save_as_prompt, select_all, select_tool, select_tools, set_magnification, show_document_history, show_error_message, show_news, show_resource_load_error_message, toggle_grid, undo, update_canvas_rect, update_disable_aa, update_helper_layer, update_magnified_canvas_size, update_title, view_bitmap, write_image_file } from "./functions.js";
 import { show_help } from "./help.js";
 import { $G, E, TAU, get_file_extension, get_help_folder_icon, is_discord_embed, make_canvas, to_canvas_coords } from "./helpers.js";
 import { init_webgl_stuff, rotate } from "./image-manipulation.js";
@@ -500,6 +500,80 @@ window.canvas_handles = canvas_handles;
 const $top = $(E("div")).addClass("component-area top").prependTo($V);
 window.$top = $top;
 const $bottom = $(E("div")).addClass("component-area bottom").appendTo($V);
+window.$bottom = $bottom;
+const fromflyng_image_urls = {
+	fromflyng1: "images/fromflyng/fromflyng1.png",
+	fromflyng2: "images/fromflyng/fromflyng2.png",
+	fromflyng3: "images/fromflyng/fromflyng3.png",
+};
+const fromflyng_image_states = {};
+let current_fromflyng_key = null;
+
+const restore_fromflyng_image_state = (key) => {
+	const state = fromflyng_image_states[key];
+	if (!state || !state.image_source) {
+		return false;
+	}
+
+	deselect();
+	cancel();
+	reset_file();
+	reset_selected_colors();
+	reset_canvas_and_history();
+	set_magnification(default_magnification);
+	main_ctx.copy(state.image_source);
+	transparency = has_any_transparency(main_ctx);
+	$canvas_area.trigger("resize");
+
+	current_history_node.name = localize("Open");
+	current_history_node.image_data = main_ctx.getImageData(0, 0, main_canvas.width, main_canvas.height);
+	current_history_node.icon = get_help_folder_icon("p_open.png");
+	$G.triggerHandler("session-update");
+	$G.triggerHandler("history-update");
+	if (state.file_name) {
+		file_name = state.file_name;
+		update_title();
+	}
+	saved = true;
+	return true;
+};
+
+const save_current_fromflyng_image_state = () => {
+	if (!current_fromflyng_key) {
+		return;
+	}
+	fromflyng_image_states[current_fromflyng_key] = {
+		...(fromflyng_image_states[current_fromflyng_key] || {}),
+		image_source: main_ctx.getImageData(0, 0, main_canvas.width, main_canvas.height),
+	};
+};
+
+const load_or_switch_fromflyng_image = (key) => {
+	if (current_fromflyng_key === key) {
+		return;
+	}
+
+	save_current_fromflyng_image_state();
+	if (restore_fromflyng_image_state(key)) {
+		current_fromflyng_key = key;
+		return;
+	}
+
+	load_image_from_uri(fromflyng_image_urls[key]).then((info) => {
+		fromflyng_image_states[key] = {
+			file_name: fromflyng_image_urls[key],
+			image_source: info.image || info.image_data,
+		};
+		current_fromflyng_key = key;
+		restore_fromflyng_image_state(key);
+	}, show_resource_load_error_message);
+};
+
+const $fromflyng_buttons = $(E("div")).addClass("fromflyng-buttons").appendTo($bottom);
+["fromflyng1", "fromflyng2", "fromflyng3"].forEach((key) => {
+	$(E("button")).text(`Load ${key}`).on("click", () => load_or_switch_fromflyng_image(key)).appendTo($fromflyng_buttons);
+});
+
 window.$bottom = $bottom;
 const $left = $(E("div")).addClass("component-area left").prependTo($H);
 window.$left = $left;

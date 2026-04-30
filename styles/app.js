@@ -569,24 +569,10 @@ const load_or_switch_fromflyng_image = (key) => {
 	}, show_resource_load_error_message);
 };
 
-const $fromflyng_buttons = $(E("div")).addClass("fromflyng-buttons");
-const build_fromflyng_buttons = () => {
-	$fromflyng_buttons.empty();
-	["fromflyng1", "fromflyng2", "fromflyng3"].forEach((key) => {
-		$(E("button")).text(`Load ${key}`).on("click", () => load_or_switch_fromflyng_image(key)).appendTo($fromflyng_buttons);
-	});
-};
-build_fromflyng_buttons();
-
-const attach_fromflyng_buttons = () => {
-	$fromflyng_buttons.detach();
-	const $wide_colors_component = $(".colors-component.wide").first();
-	if ($wide_colors_component.length) {
-		$wide_colors_component.append($fromflyng_buttons);
-	} else {
-		$bottom.append($fromflyng_buttons);
-	}
-};
+const $fromflyng_buttons = $(E("div")).addClass("fromflyng-buttons").appendTo($bottom);
+["fromflyng1", "fromflyng2", "fromflyng3"].forEach((key) => {
+	$(E("button")).text(`Load ${key}`).on("click", () => load_or_switch_fromflyng_image(key)).appendTo($fromflyng_buttons);
+});
 
 window.$bottom = $bottom;
 const $left = $(E("div")).addClass("component-area left").prependTo($H);

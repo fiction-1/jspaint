@@ -446,7 +446,7 @@ whereas it breaks component docking calculations if used to shift the colors box
 .colors-component.wide .fromflyng-buttons button {
 	min-width: 40px;
 	height: 24px;
-	font-size: 12px;
+	font-size: 10px;
 	padding: 0 4px;
 }
 .colors-component.tall .color-button,

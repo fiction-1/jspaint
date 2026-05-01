@@ -9,7 +9,7 @@ import { Handles } from "./Handles.js";
 // import { get_direction, localize } from "./app-localization.js";
 import { default_palette, get_winter_palette } from "./color-data.js";
 import { image_formats } from "./file-format-data.js";
-import { show_send_to_fromflyng_dialog } from "./fromflyng.js";
+import { close_contact_dialog, show_send_to_fromflyng_dialog } from "./fromflyng.js";
 import { $this_version_news, cancel, change_some_url_params, change_url_param, clear, confirm_overwrite_capability, delete_selection, deselect, edit_copy, edit_cut, edit_paste, file_new, file_open, file_save, file_save_as, get_tool_by_id, get_uris, has_any_transparency, image_attributes, image_flip_and_rotate, image_invert_colors, image_stretch_and_skew, load_image_from_uri, make_or_update_undoable, open_from_file, paste, paste_image_from_file, redo, render_history_as_gif, reset_canvas_and_history, reset_file, reset_selected_colors, resize_canvas_and_save_dimensions, resize_canvas_without_saving_dimensions, save_as_prompt, select_all, select_tool, select_tools, set_magnification, show_document_history, show_error_message, show_news, show_resource_load_error_message, toggle_grid, undo, update_canvas_rect, update_disable_aa, update_helper_layer, update_magnified_canvas_size, update_title, view_bitmap, write_image_file } from "./functions.js";
 import { show_help } from "./help.js";
 import { $G, E, TAU, get_file_extension, get_help_folder_icon, is_discord_embed, make_canvas, to_canvas_coords } from "./helpers.js";
@@ -510,8 +510,8 @@ const fromflyng_image_urls = {
 };
 const button_labels = {
 	home: "Home",
-	about: "about",
-	past_works: "past works",
+	about: "About",
+	past_works: "Past Works",
 	contact: "Contact",
 };
 const fromflyng_image_states = {};
@@ -562,6 +562,9 @@ const load_or_switch_fromflyng_image = (key) => {
 	}
 
 	save_current_fromflyng_image_state();
+	if (key !== "contact") {
+		close_contact_dialog();
+	}
 	if (restore_fromflyng_image_state(key)) {
 		current_fromflyng_key = key;
 		if (key === "contact") {
@@ -583,24 +586,42 @@ const load_or_switch_fromflyng_image = (key) => {
 	}, show_resource_load_error_message);
 };
 
-const $fromflyng_buttons = $(E("div")).addClass("fromflyng-buttons");
-const build_fromflyng_buttons = () => {
-	$fromflyng_buttons.empty();
-	["home", "about", "past_works", "contact"].forEach((key) => {
-		$(E("button")).text(button_labels[key] || key).on("click", () => load_or_switch_fromflyng_image(key)).appendTo($fromflyng_buttons);
-	});
+const fromflyng_menu_order = ["home", "about", "past_works", "contact"];
+const fromflyng_menu_titles = {
+	home: localize("&Home"),
+	about: localize("&About"),
+	past_works: localize("Past &Works"),
+	contact: localize("&Contact"),
 };
-build_fromflyng_buttons();
-
-const attach_fromflyng_buttons = () => {
-	$fromflyng_buttons.detach();
-	const $wide_colors_component = $(".colors-component.wide").first();
-	if ($wide_colors_component.length) {
-		$wide_colors_component.append($fromflyng_buttons);
-	} else {
-		$bottom.append($fromflyng_buttons);
+const get_fromflyng_preview_image_src = (key) => {
+	const state = fromflyng_image_states[key];
+	if (key === current_fromflyng_key) {
+		return main_canvas.toDataURL("image/png");
 	}
+	if (state?.image_source) {
+		const preview_canvas = document.createElement("canvas");
+		preview_canvas.width = main_canvas.width;
+		preview_canvas.height = main_canvas.height;
+		const preview_ctx = preview_canvas.getContext("2d");
+		if (preview_ctx) {
+			preview_ctx.putImageData(state.image_source, 0, 0);
+			return preview_canvas.toDataURL("image/png");
+		}
+	}
+	return fromflyng_image_urls[key];
 };
+for (const key of fromflyng_menu_order) {
+	const menu_key = fromflyng_menu_titles[key];
+	const menu_items = [{
+		label: "",
+		action: () => load_or_switch_fromflyng_image(key),
+		description: localize(`Preview the ${button_labels[key]} page.`),
+		image: () => get_fromflyng_preview_image_src(key),
+		imageAlt: button_labels[key],
+	}];
+	menu_items.hoverMenu = true;
+	menus[menu_key] = menu_items;
+}
 
 window.$bottom = $bottom;
 const $left = $(E("div")).addClass("component-area left").prependTo($H);
@@ -883,7 +904,6 @@ window.$toolbox = $toolbox;
 
 let $colorbox = $ColorBox($("body").hasClass("vertical-color-box-mode"));
 window.$colorbox = $colorbox;
-attach_fromflyng_buttons();
 
 $G.on("vertical-color-box-mode-toggled", () => {
 	// Destroy and recreate the color box because it uses a constructor parameter
@@ -892,7 +912,6 @@ $G.on("vertical-color-box-mode-toggled", () => {
 	$colorbox = $ColorBox($("body").hasClass("vertical-color-box-mode"));
 	window.$colorbox = $colorbox;
 	prevent_selection($colorbox);
-	attach_fromflyng_buttons();
 });
 
 $G.on("resize", () => { // for browser zoom, and in-app zoom of the canvas

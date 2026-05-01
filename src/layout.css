@@ -324,6 +324,27 @@ whereas it breaks component docking calculations if used to shift the colors box
 	/* @TODO: make this part of os-gui */
 	white-space: nowrap;
 }
+.menu-item-preview {
+	display: block;
+	max-width: 280px;
+	height: auto;
+	width: 100%;
+	object-fit: contain;
+	margin: 0.4rem 0;
+}
+.menu-popup .menu-item {
+	padding: 0;
+}
+.menu-popup .menu-item-checkbox-area,
+.menu-popup .menu-item-shortcut,
+.menu-popup .menu-item-submenu-area {
+	width: 0;
+	padding: 0;
+	border: none;
+}
+.menu-popup .menu-item-label {
+	padding: 0;
+}
 .menus {
 	/* @TODO: make this part of os-gui; note that Explorer does overflow differently though */
 	flex-wrap: wrap;
@@ -436,18 +457,6 @@ whereas it breaks component docking calculations if used to shift the colors box
 .colors-component.wide .color-button,
 .colors-component.wide .color-selection {
 	margin-left: 1px;
-}
-.colors-component.wide .fromflyng-buttons {
-	display: flex;
-	align-items: center;
-	gap: 2px;
-	margin-left: 4px;
-}
-.colors-component.wide .fromflyng-buttons button {
-	min-width: 40px;
-	height: 24px;
-	font-size: 10px;
-	padding: 0 4px;
 }
 .colors-component.tall .color-button,
 .colors-component.tall .color-selection {

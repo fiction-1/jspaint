@@ -10,6 +10,8 @@ import { write_image_file } from "./functions.js";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3PWlFf0VZLbEgUNRMKni-CJC83b0wlGYsTvj8viygOeQhJ9inO3l1fQQDT4n5cJVaYQ/exec"; // ← paste your deployed Apps Script URL here
 const fromflyng_email_address = "fromflyng@gmail.com";
 
+let current_contact_dialog = null;
+
 // ------------------------------------------------------------
 //  Sends the current canvas image to fromflyng
 //  Uses native share sheet on mobile, silent POST on desktop
@@ -54,7 +56,6 @@ export const send_current_image_to_fromflyng = async (name, email) => {
             body: params,
           });
 
-          show_success_message();
           resolve();
         };
 
@@ -121,7 +122,7 @@ export const show_send_to_fromflyng_dialog = () => {
     $status.text("sending…").css("color", "#555");
 
     await send_current_image_to_fromflyng(name, email);
-    $window.close();
+    $window.$main.empty().append($("<p>").text("your letter has been sent!").css({ fontSize: "16px", textAlign: "center", margin: "20px" }));
 
   }, { type: "button" });
 
@@ -141,6 +142,19 @@ export const show_send_to_fromflyng_dialog = () => {
   );
 
   $window.center();
+
+  current_contact_dialog = $window;
+  return $window;
+};
+
+// ------------------------------------------------------------
+//  Close the contact dialog if open
+// ------------------------------------------------------------
+export const close_contact_dialog = () => {
+  if (current_contact_dialog) {
+    current_contact_dialog.close();
+    current_contact_dialog = null;
+  }
 };
 
 // ------------------------------------------------------------

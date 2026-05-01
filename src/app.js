@@ -9,6 +9,7 @@ import { Handles } from "./Handles.js";
 // import { get_direction, localize } from "./app-localization.js";
 import { default_palette, get_winter_palette } from "./color-data.js";
 import { image_formats } from "./file-format-data.js";
+import { show_send_to_fromflyng_dialog } from "./fromflyng.js";
 import { $this_version_news, cancel, change_some_url_params, change_url_param, clear, confirm_overwrite_capability, delete_selection, deselect, edit_copy, edit_cut, edit_paste, file_new, file_open, file_save, file_save_as, get_tool_by_id, get_uris, has_any_transparency, image_attributes, image_flip_and_rotate, image_invert_colors, image_stretch_and_skew, load_image_from_uri, make_or_update_undoable, open_from_file, paste, paste_image_from_file, redo, render_history_as_gif, reset_canvas_and_history, reset_file, reset_selected_colors, resize_canvas_and_save_dimensions, resize_canvas_without_saving_dimensions, save_as_prompt, select_all, select_tool, select_tools, set_magnification, show_document_history, show_error_message, show_news, show_resource_load_error_message, toggle_grid, undo, update_canvas_rect, update_disable_aa, update_helper_layer, update_magnified_canvas_size, update_title, view_bitmap, write_image_file } from "./functions.js";
 import { show_help } from "./help.js";
 import { $G, E, TAU, get_file_extension, get_help_folder_icon, is_discord_embed, make_canvas, to_canvas_coords } from "./helpers.js";
@@ -502,9 +503,16 @@ window.$top = $top;
 const $bottom = $(E("div")).addClass("component-area bottom").appendTo($V);
 window.$bottom = $bottom;
 const fromflyng_image_urls = {
-	fromflyng1: "images/fromflyng/fromflyng1.png",
-	fromflyng2: "images/fromflyng/fromflyng2.png",
-	fromflyng3: "images/fromflyng/fromflyng3.png",
+	home: "images/fromflyng/fromflyng1.png",
+	about: "images/fromflyng/fromflyng2.png",
+	past_works: "images/fromflyng/fromflyng3.png",
+	contact: "images/fromflyng/fromflyng4.png",
+};
+const button_labels = {
+	home: "Home",
+	about: "about",
+	past_works: "past works",
+	contact: "Contact",
 };
 const fromflyng_image_states = {};
 let current_fromflyng_key = null;
@@ -556,6 +564,9 @@ const load_or_switch_fromflyng_image = (key) => {
 	save_current_fromflyng_image_state();
 	if (restore_fromflyng_image_state(key)) {
 		current_fromflyng_key = key;
+		if (key === "contact") {
+			show_send_to_fromflyng_dialog();
+		}
 		return;
 	}
 
@@ -566,14 +577,17 @@ const load_or_switch_fromflyng_image = (key) => {
 		};
 		current_fromflyng_key = key;
 		restore_fromflyng_image_state(key);
+		if (key === "contact") {
+			show_send_to_fromflyng_dialog();
+		}
 	}, show_resource_load_error_message);
 };
 
 const $fromflyng_buttons = $(E("div")).addClass("fromflyng-buttons");
 const build_fromflyng_buttons = () => {
 	$fromflyng_buttons.empty();
-	["fromflyng1", "fromflyng2", "fromflyng3"].forEach((key) => {
-		$(E("button")).text(`Load ${key}`).on("click", () => load_or_switch_fromflyng_image(key)).appendTo($fromflyng_buttons);
+	["home", "about", "past_works", "contact"].forEach((key) => {
+		$(E("button")).text(button_labels[key] || key).on("click", () => load_or_switch_fromflyng_image(key)).appendTo($fromflyng_buttons);
 	});
 };
 build_fromflyng_buttons();
@@ -1410,7 +1424,7 @@ localStore.get({
 		}
 		$canvas_area.trigger("resize");
 		if (!window.initial_system_file_handle) {
-			load_or_switch_fromflyng_image("fromflyng1");
+			load_or_switch_fromflyng_image("home");
 		}
 	});
 });

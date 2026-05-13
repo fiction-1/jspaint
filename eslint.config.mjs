@@ -258,15 +258,11 @@ export default [
 	},
 	{
 		"files": [
-			"forge.config.js",
-			"src/electron-injected.js",
-			"src/electron-main.js",
 			"sync-package.js",
 			"prune-globals.js",
 			"cypress/plugins/index.js",
 			"localization/*.js",
 			"scripts/**/*.js",
-			"jspaint-bin.js",
 		],
 		"languageOptions": {
 			"sourceType": "commonjs",
